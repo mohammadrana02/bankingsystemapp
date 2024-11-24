@@ -3,25 +3,26 @@ from admin import Admin
 import pandas as pd
 pd.set_option('display.max_columns', None) # so the user's data won't be truncated when it is printed to the console
 
+# df.loc[df['account_number'] == account_number, 'balance'] -= withdraw # withdraws money from the balance column
+
 accounts_list = []
 admins_list = []
 
 class BankSystem(object):
 	def __init__(self):
 		# self.accounts_list = []
-		# self.admins_list = []
-		# self.load_bank_data()
+		self.admins_list = []
+		self.load_bank_data()
 
 		# loads the customer data into a dataframe
-		self.customers = pd.read_csv('customers.csv', sep=';')
-		print(self.customers)
+		self.cu = pd.read_csv('customers.csv', sep=';')
+		print(self.cu)
 
 		# loads the admin data into a dataframe
-		self.admins = pd.read_csv('admins.csv', sep=';')
-		print(self.admins)
+		self.ad = pd.read_csv('admins.csv', sep=';')
+		print(self.ad)
 
 	def load_bank_data(self):
-		pass
 		# create customers
 		# account_no = 1234
 		# customer_1 = CustomerAccount("Adam", "Smith", ["14", "Wilcot Street", "Bath", "B5 5RT"], account_no, 5000.00)
@@ -38,19 +39,25 @@ class BankSystem(object):
 		# account_no+=1
 		# customer_4 = CustomerAccount("Ali", "Abdallah",["44", "Churchill Way West", "Basingstoke", "RG21 6YR"], account_no, 40.00)
 		# self.accounts_list.append(customer_4)
-		#
-		## create admins
-		#
-		# admin_1 = Admin("Julian", "Padget", ["12", "London Road", "Birmingham", "B95 7TT"], "id1188", "1441", True)
-		# self.admins_list.append(admin_1)
-		#
-		# admin_2 = Admin("Cathy",  "Newman", ["47", "Mars Street", "Newcastle", "NE12 6TZ"], "id3313", "2442", False)
-		# self.admins_list.append(admin_2)
+		# create admins
+
+		admin_1 = Admin("Julian", "Padget", ["12", "London Road", "Birmingham", "B95 7TT"], "id1188", "1441", True)
+		self.admins_list.append(admin_1)
+
+		admin_2 = Admin("Cathy",  "Newman", ["47", "Mars Street", "Newcastle", "NE12 6TZ"], "id3313", "2442", False)
+		self.admins_list.append(admin_2)
 
 
 	def search_admins_by_name(self, admin_username):
-		#STEP A.2
-		pass
+		found_admin = None
+		for a in self.admins_list:
+			username = a.get_username()
+			if username == admin_username:
+				found_admin = a
+				break
+		if found_admin == None:
+			print("\n The Admin %s does not exist! Try again...\n" % admin_username)
+		return found_admin
 
 	def search_customers_by_name(self, customer_lname):
 		#STEP A.3
@@ -93,27 +100,31 @@ class BankSystem(object):
 
 
 	def admin_login(self, username, password):
-		#STEP A.1
-		user_exists = self.admins[(self.admins['user_name'] == username) & (
-				self.admins['password'] == int(password))]  # checks if the username and password match
+		found_admin = self.search_admins_by_name(username)
+		msg = "\n Login failed"
+		if found_admin != None:
+			if found_admin.get_password() == password:
+				msg = "\n Login successful"
+		return msg, found_admin
 
-		if not user_exists.empty:  # if the username and the password are a match
-			admin_data = user_exists.iloc[0]  # Get the first matching row (if any)
-
-			# Creating the Admin object with the relevant fields
-			admin_obj = Admin(
-				fname=admin_data['fname'],
-				lname=admin_data['lname'],
-				address=admin_data['address'],
-				user_name=admin_data['user_name'],
-				password=admin_data['password'],
-				full_rights=admin_data['full_rights'])
-
-			return 'Successfully logged in!', admin_obj
-		else:
-			return 'Username or password incorrect.', None  # if they don't match
-
-	pass
+		# user_exists = self.ad[(self.ad['user_name'] == username) & (
+		# 		self.ad['password'] == int(password))]  # checks if the username and password match
+		#
+		# if not user_exists.empty:  # if the username and the password are a match
+		# 	admin_data = user_exists.iloc[0]  # Get the first matching row (if any)
+		#
+		# 	# creating the Admin object with the relevant fields
+		# 	admin_obj = Admin(
+		# 		fname=admin_data['fname'],
+		# 		lname=admin_data['lname'],
+		# 		address=admin_data['address'],
+		# 		user_name=admin_data['user_name'],
+		# 		password=admin_data['password'],
+		# 		full_rights=admin_data['full_rights'])
+		#
+		# 	return 'Successfully logged in!', admin_obj
+		# else:
+		# 	return 'Username or password incorrect.', None  # if they don't match
 
 	def admin_menu(self, admin_obj):
 		#print the options you have
@@ -141,8 +152,27 @@ class BankSystem(object):
 				receiver_account_no = input("\n Please input receiver account number: ")
 				self.transferMoney(sender_lname, receiver_lname, receiver_account_no, amount)
 			elif choice == 2:
-				#STEP A.4
-				pass
+				lname = input("\n Please input the customer's last name: ")
+
+				cust_obj = self.search_customers_by_name(customer_lname=lname)
+				while True:
+					# account number is used as a unique identfier
+					acc_number = int(input("\nPlease input the customer's account number: "))
+					user_exists = self.cu[(self.cu['account_no'] == acc_number)] # checks if the account number exists
+
+					if not user_exists.empty:  # if the account number is a match
+						user_data = user_exists.iloc[0]  # Get the first matching row (if any)
+
+						# creating the User object with the relevant fields
+						cust_obj = CustomerAccount(
+							fname=user_data['fname'],
+							lname=user_data['lname'],
+							address=user_data['address'],
+							account_no=user_data['account_no'],
+							balance=user_data['balance'])
+					else:
+						print('User does not exist.')
+
 
 			elif choice == 3:
 				#Todo

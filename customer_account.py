@@ -29,8 +29,10 @@ class CustomerAccount:
         self.balance+=amount
         
     def withdraw(self, amount):
-        #ToDo
-        pass
+        if amount < self.balance:
+            self.balance-=amount
+        else:
+            print('You cannot withdraw more than your balance')
         
     def print_balance(self):
         print("\n The account balance is %.2f" %self.balance)
