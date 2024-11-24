@@ -131,7 +131,7 @@ class BankSystem(object):
 					lname = input("\n Please input the customer's last name: ")
 					msg, cust_obj = self.search_customers_by_name(lname=lname)
 					print(msg)
-					if cust_obj != None:
+					if cust_obj is not None:
 						while True:
 							option = self.cust_menu(cust_obj)
 							if option == 1: # deposit into customer account
@@ -149,10 +149,24 @@ class BankSystem(object):
 								print(f'New Balance: £{cust_obj.get_balance()}')
 
 							if option == 2: # withdraw from account
-								withdraw = float(input("\n Please input the amount to withdraw: "))
+								while True:
+									withdraw = float(input("\n Please input the amount to withdraw: "))
+									old_balance = cust_obj.get_balance()
+									if withdraw > cust_obj.get_balance():
+										print('Error. withdraw amount greater than balance.')
+									elif withdraw < 0:
+										print('Error. withdraw amount less than 0.')
+									else:
+										cust_obj.withdraw(withdraw)
+										self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'balance'] -= withdraw
+										self.df.to_csv('customers.csv', index=False, sep=';')
+										print(f'Withdraw successful.')
+										print(f'Old Balance: £{old_balance}')
+										print(f'New Balance: £{cust_obj.get_balance()}')
 
 							if option == 3: # check balance
-								print(f'Current Balance: £{cust_obj.get_balance()}')
+								print(cust_obj.print_balance())
+								# print(f'Current Balance: £{cust_obj.get_balance()}')
 							if option == 4: # view customer details
 								cust_obj.print_details()
 							if option == 5: # update info
@@ -160,9 +174,20 @@ class BankSystem(object):
 							if option == 6:
 								self.admin_menu(admin_obj)
 
-			elif choice == 3:
-				#Todo
-				pass
+			elif choice == 3: # closing a user account
+				if admin_obj.has_full_admin_right() is False:
+					print('You do not have permissions to perform this action.')
+				else:
+					while True:
+						lname = input("\n Please input the customer's last name: ")
+						msg, cust_obj = self.search_customers_by_name(lname=lname)
+						print(msg)
+						self.df.drop(self.df[self.df['lname'] == cust_obj.get_last_name()].index, inplace=True)
+						self.df.to_csv('customers.csv', index=False, sep=';')
+
+
+
+
 
 			elif choice == 4:
 				#Todo
