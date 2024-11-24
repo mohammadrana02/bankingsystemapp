@@ -1,5 +1,6 @@
 from customer_account import CustomerAccount
 from admin import Admin
+import pandas as pd
 
 accounts_list = []
 admins_list = []
@@ -11,25 +12,29 @@ class BankSystem(object):
         self.load_bank_data()
     
     def load_bank_data(self):
-        
+
+        df = pd.read_csv('customers.csv', sep=';')
+        print(df)
+
         # create customers
-        account_no = 1234
-        customer_1 = CustomerAccount("Adam", "Smith", ["14", "Wilcot Street", "Bath", "B5 5RT"], account_no, 5000.00)
-        self.accounts_list.append(customer_1)
-        
-        account_no+=1
-        customer_2 = CustomerAccount("David", "White", ["60", "Holborn Viaduct", "London", "EC1A 2FD"], account_no, 3200.00)    
-        self.accounts_list.append(customer_2)
-
-        account_no+=1
-        customer_3 = CustomerAccount("Alice", "Churchil", ["5", "Cardigan Street", "Birmingham", "B4 7BD"], account_no, 18000.00)
-        self.accounts_list.append(customer_3)
-
-        account_no+=1
-        customer_4 = CustomerAccount("Ali", "Abdallah",["44", "Churchill Way West", "Basingstoke", "RG21 6YR"], account_no, 40.00)
-        self.accounts_list.append(customer_4)
-                
+        # account_no = 1234
+        # customer_1 = CustomerAccount("Adam", "Smith", ["14", "Wilcot Street", "Bath", "B5 5RT"], account_no, 5000.00)
+        # self.accounts_list.append(customer_1)
+        #
+        # account_no+=1
+        # customer_2 = CustomerAccount("David", "White", ["60", "Holborn Viaduct", "London", "EC1A 2FD"], account_no, 3200.00)
+        # self.accounts_list.append(customer_2)
+        #
+        # account_no+=1
+        # customer_3 = CustomerAccount("Alice", "Churchil", ["5", "Cardigan Street", "Birmingham", "B4 7BD"], account_no, 18000.00)
+        # self.accounts_list.append(customer_3)
+        #
+        # account_no+=1
+        # customer_4 = CustomerAccount("Ali", "Abdallah",["44", "Churchill Way West", "Basingstoke", "RG21 6YR"], account_no, 40.00)
+        # self.accounts_list.append(customer_4)
+        #
         # create admins
+
         admin_1 = Admin("Julian", "Padget", ["12", "London Road", "Birmingham", "B95 7TT"], "id1188", "1441", True)
         self.admins_list.append(admin_1)
 
@@ -75,6 +80,7 @@ class BankSystem(object):
         print ("\n Thank-You for stopping by the bank!")
 
 
+
     def transferMoney(self, sender_lname, receiver_lname, receiver_account_no, amount):
         #ToDo
         pass
@@ -82,6 +88,7 @@ class BankSystem(object):
                 
     def admin_login(self, username, password):
 		  #STEP A.1
+
         pass
 
     def admin_menu(self, admin_obj):
