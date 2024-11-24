@@ -133,7 +133,8 @@ class BankSystem(object):
 					print(msg)
 					if cust_obj is not None:
 						while True:
-							option = self.cust_menu(cust_obj)
+							# option = self.cust_menu(cust_obj)
+							option = cust_obj.account_menu()
 							if option == 1: # deposit into customer account
 								deposit = float(input("\n Please input the amount to deposit: "))
 								old_balance = cust_obj.get_balance()
@@ -167,13 +168,30 @@ class BankSystem(object):
 							if option == 3: # check balance
 								print(cust_obj.print_balance())
 								# print(f'Current Balance: £{cust_obj.get_balance()}')
-							if option == 4: # view customer details
-								cust_obj.print_details()
-							if option == 5: # update info
-								pass
-							if option == 6:
-								self.admin_menu(admin_obj)
+							if option == 4: # update customer name
+								lname = input("\nPlease enter the new last name: ")
+								fname = input("\nPlease enter the new first name: ")
 
+								# Update the first name in the dataframe
+								self.df.loc[self.df['fname'] == cust_obj.get_first_name(), 'fname'] = fname
+
+								# Update the last name in the dataframe
+								self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'lname'] = lname
+								self.df.to_csv('customers.csv', index=False, sep=';')
+
+								# update first and last name within the app
+								cust_obj.update_first_name(fname)
+								cust_obj.update_last_name(lname)
+
+								# Print confirmation or updated DataFrame
+								print(f"Updated names: {fname} {lname}")
+
+							if option == 5: # update address
+								pass
+							if option == 6: # show customer details
+								cust_obj.print_details()
+							if option == 7:
+								self.admin_menu(admin_obj)
 			elif choice == 3: # closing a user account
 				if admin_obj.has_full_admin_right() is False:
 					print('You do not have permissions to perform this action.')
@@ -206,17 +224,6 @@ class BankSystem(object):
 			print('\n %d. ' %i, end = ' ')
 			c.print_details()
 			print("------------------------")
-
-	def cust_menu(self, cust_obj):
-		print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-		print("1) Deposit")  # transfer from one account to another
-		print("2) Withdraw")  # deposit, withdraw, view details, check balance
-		print("3) Check Balance")  # delete customer if admin has full rights
-		print("4) View Customer Details")  # output all customer details
-		print("5) Update Information")  # sign out
-		print("6) Go Back to Admin Menu")
-		option = int(input("Choose your option: "))
-		return option
 
 
 app = BankSystem()
