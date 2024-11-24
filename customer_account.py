@@ -3,7 +3,7 @@ class CustomerAccount:
     def __init__(self, fname, lname, address, account_no, balance):
         self.fname = fname
         self.lname = lname
-        self.address = address
+        self.address = address.split(',')
         self.account_no = account_no
         self.balance = float(balance)
     
