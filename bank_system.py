@@ -15,8 +15,8 @@ class BankSystem(object):
 		self.load_bank_data()
 
 		# loads the customer data into a dataframe
-		self.cu = pd.read_csv('customers.csv', sep=';')
-		print(self.cu)
+		self.df = pd.read_csv('customers.csv', sep=';')
+		print(self.df)
 
 		# loads the admin data into a dataframe
 		self.ad = pd.read_csv('admins.csv', sep=';')
@@ -59,9 +59,22 @@ class BankSystem(object):
 			print("\n The Admin %s does not exist! Try again...\n" % admin_username)
 		return found_admin
 
-	def search_customers_by_name(self, customer_lname):
-		#STEP A.3
-		pass
+	def search_customers_by_name(self, lname):
+		user_exists = self.df[(self.df['lname'] == lname)]  # checks if the last name exists
+
+		if not user_exists.empty:  # if the account number is a match
+			user_data = user_exists.iloc[0]  # Get the first matching row (if any)
+
+			# creating the User object with the relevant fields
+			cust_obj = CustomerAccount(
+				fname=user_data['fname'],
+				lname=user_data['lname'],
+				address=user_data['address'],
+				account_no=user_data['account_no'],
+				balance=user_data['balance'])
+			return 'Success', cust_obj
+		else:
+			return 'User does not exist.', None
 
 	def main_menu(self):
 		#print the options you have
@@ -131,11 +144,11 @@ class BankSystem(object):
 		print (" ")
 		print ("Welcome Admin %s %s : Available options are:" %(admin_obj.get_first_name(), admin_obj.get_last_name()))
 		print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-		print ("1) Transfer money")
-		print ("2) Customer account operations & profile settings")
-		print ("3) Delete customer")
-		print ("4) Print all customers detail")
-		print ("5) Sign out")
+		print ("1) Transfer money") # transfer from one account to another
+		print ("2) Customer account operations & profile settings") # deposit, withdraw, view details, check balance
+		print ("3) Delete customer") # delete customer if admin has full rights
+		print ("4) Print all customers detail") # output all customer details
+		print ("5) Sign out") # sign out
 		print (" ")
 		option = int(input ("Choose your option: "))
 		return option
@@ -152,27 +165,33 @@ class BankSystem(object):
 				receiver_account_no = input("\n Please input receiver account number: ")
 				self.transferMoney(sender_lname, receiver_lname, receiver_account_no, amount)
 			elif choice == 2:
-				lname = input("\n Please input the customer's last name: ")
-
-				cust_obj = self.search_customers_by_name(customer_lname=lname)
 				while True:
-					# account number is used as a unique identfier
-					acc_number = int(input("\nPlease input the customer's account number: "))
-					user_exists = self.cu[(self.cu['account_no'] == acc_number)] # checks if the account number exists
+					lname = input("\n Please input the customer's last name: ")
+					msg, cust_obj = self.search_customers_by_name(lname=lname)
+					print(msg)
+					if cust_obj != None:
+						option = self.cust_menu(cust_obj)
+						if option == 1:
+							deposit = float(input("\n Please input the amount to deposit: "))
+							print(cust_obj.get_last_name())
+							old_balance = cust_obj.get_balance()
+							cust_obj.deposit(deposit)
+							self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'balance'] += deposit
+							self.df.to_csv('customers.csv', index=False, sep=';')
+							print(f'Deposit successful.')
+							print(f'Old Balance: {old_balance}')
+							print(f'New Balance: {cust_obj.get_balance()}')
 
-					if not user_exists.empty:  # if the account number is a match
-						user_data = user_exists.iloc[0]  # Get the first matching row (if any)
-
-						# creating the User object with the relevant fields
-						cust_obj = CustomerAccount(
-							fname=user_data['fname'],
-							lname=user_data['lname'],
-							address=user_data['address'],
-							account_no=user_data['account_no'],
-							balance=user_data['balance'])
-					else:
-						print('User does not exist.')
-
+						if option == 2:
+							withdraw = float(input("\n Please input the amount to withdraw: "))
+						if option == 3:
+							pass
+						if option == 4:
+							pass
+						if option == 5:
+							pass
+						if option == 6:
+							self.admin_menu(admin_obj)
 
 			elif choice == 3:
 				#Todo
@@ -195,6 +214,17 @@ class BankSystem(object):
 			print('\n %d. ' %i, end = ' ')
 			c.print_details()
 			print("------------------------")
+
+	def cust_menu(self, cust_obj):
+		print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+		print("1) Deposit")  # transfer from one account to another
+		print("2) Withdraw")  # deposit, withdraw, view details, check balance
+		print("3) Check Balance")  # delete customer if admin has full rights
+		print("4) View Customer Details")  # output all customer details
+		print("5) Update Information")  # sign out
+		print("6) Go Back to Admin Menu")
+		option = int(input("Choose your option: "))
+		return option
 
 
 app = BankSystem()
