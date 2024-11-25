@@ -8,7 +8,6 @@ admins_list = []
 
 class BankSystem(object):
 	def __init__(self):
-		# self.accounts_list = []
 		self.admins_list = []
 		self.load_bank_data()
 
@@ -16,9 +15,9 @@ class BankSystem(object):
 		self.df = pd.read_csv('customers.csv', sep=';')
 		print(self.df)
 
-		# loads the admin data into a dataframe
-		self.ad = pd.read_csv('admins.csv', sep=';')
-		print(self.ad)
+		# # loads the admin data into a dataframe
+		# self.ad = pd.read_csv('admins.csv', sep=';')
+		# print(self.ad)
 
 	def load_bank_data(self):
 
@@ -192,11 +191,24 @@ class BankSystem(object):
 								# Print confirmation or updated DataFrame
 								print(f"Updated names: {fname} {lname}")
 
-							if option == 5: # update address
-								pass
+							if option == 5: # update address house num, street name city postcode
+								hnumber = input("\nPlease enter the new address number: ")
+								str_name = input("Please enter the new street name: ")
+								city = input("Please enter the new city: ")
+								post_code = input("Please enter the new postcode: ")
+
+								address = f'{hnumber}, {str_name}, {city}, {post_code}'
+
+								self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'address'] = address
+								self.df.to_csv('customers.csv', index=False, sep=';')
+
+								cust_obj.update_address(address)
+
+								print(f'Updated address:')
+
 							if option == 6: # show customer details
 								cust_obj.print_details()
-							if option == 7:
+							if option == 7: # go back to admin menu
 								self.admin_menu(admin_obj)
 			elif choice == 3: # closing a user account
 				if admin_obj.has_full_admin_right() is False:
