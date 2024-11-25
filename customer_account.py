@@ -28,11 +28,21 @@ class CustomerAccount:
     def get_address(self):
         return self.address
     
-    def deposit(self, amount):
+    def deposit(self, amount, df):
+        df.loc[df['lname'] == self.get_last_name(), 'balance'] += amount
+        df.to_csv('customers.csv', index=False, sep=';')
         self.balance+=amount
         
-    def withdraw(self, amount):
-        self.balance-=amount
+    def withdraw(self, amount, df):
+        if amount > self.get_balance():
+            print('Error. withdraw amount greater than balance.')
+        elif amount < 0:
+            print('Error. withdraw amount less than 0.')
+        else:
+            self.balance-=amount
+            df.loc[df['lname'] == self.get_last_name(), 'balance'] -= amount
+            df.to_csv('customers.csv', index=False, sep=';')
+
         
     def print_balance(self):
         print("\n The account balance is %.2f" %self.balance)
@@ -76,26 +86,17 @@ class CustomerAccount:
             choice = self.account_menu()
             if choice == 1:
                 amount = float(input("\n Please enter amount to be deposited: "))
-
-                df.loc[df['lname'] == self.get_last_name(), 'balance'] += amount
-                df.to_csv('customers.csv', index=False, sep=';')
-
-                self.deposit(amount)
+                self.deposit(amount, df)
                 self.print_balance()
+
             elif choice == 2:
                 withdraw = float(input("\n Please input the amount to withdraw: "))
                 old_balance = self.get_balance()
-                if withdraw > self.get_balance():
-                    print('Error. withdraw amount greater than balance.')
-                elif withdraw < 0:
-                    print('Error. withdraw amount less than 0.')
-                else:
-                    self.withdraw(withdraw)
-                    df.loc[df['lname'] == self.get_last_name(), 'balance'] -= withdraw
-                    df.to_csv('customers.csv', index=False, sep=';')
-                    print(f'Withdraw successful.')
-                    print(f'Old Balance: £{old_balance}')
-                    print(f'New Balance: £{self.get_balance()}')
+                self.withdraw(withdraw, df)
+
+                print(f'Old Balance: £{old_balance}')
+                print(f'New Balance: £{self.get_balance()}')
+
             elif choice == 3:
                 self.print_balance()
             elif choice == 4:

@@ -22,7 +22,6 @@ class BankSystem(object):
 		admin_2 = Admin("Cathy",  "Newman", ["47", "Mars Street", "Newcastle", "NE12 6TZ"], "id3313", "2442", False)
 		self.admins_list.append(admin_2)
 
-
 	def search_admins_by_name(self, admin_username):
 		found_admin = None
 		for a in self.admins_list:
@@ -68,7 +67,6 @@ class BankSystem(object):
 		option = int(input ("Choose your option: "))
 		return option
 
-
 	def run_main_options(self):
 		loop = 1
 		while loop == 1:
@@ -84,12 +82,15 @@ class BankSystem(object):
 				loop = 0
 		print ("\n Thank-You for stopping by the bank!")
 
-
-
 	def transferMoney(self, sender_lname, receiver_lname, receiver_account_no, amount):
-		#ToDo
-		pass
+		msg, sender = self.search_customers_by_name(sender_lname)
+		msg, receiver = self.search_customers_by_name(receiver_lname)
 
+		sender.withdraw(amount, self.df)
+		receiver.deposit(amount, self.df)
+
+		print(f'Sender Balance: {sender.get_balance()}')
+		print(f'Receiver Balance: {receiver.get_balance()}')
 
 	def admin_login(self, username, password):
 		found_admin = self.search_admins_by_name(username)
@@ -114,7 +115,6 @@ class BankSystem(object):
 		print (" ")
 		option = int(input ("Choose your option: "))
 		return option
-
 
 	def run_admin_options(self, admin_obj):
 		loop = 1
@@ -144,7 +144,6 @@ class BankSystem(object):
 						print(msg)
 						self.df.drop(self.df[self.df['lname'] == cust_obj.get_last_name()].index, inplace=True)
 						self.df.to_csv('customers.csv', index=False, sep=';')
-
 
 			elif choice == 4: # print all customer details
 				self.print_all_accounts_details()
