@@ -109,8 +109,10 @@ class BankSystem(object):
 		print ("1) Transfer money") # transfer from one account to another
 		print ("2) Customer account operations & profile settings") # deposit, withdraw, view details, check balance
 		print ("3) Delete customer") # delete customer if admin has full rights
-		print ("4) Print all customers detail") # output all customer details
-		print ("5) Sign out") # sign out
+		print ("4) Print all customers details") # output all customer details
+		print("5) Admin settings")
+		print("6) Print management report")
+		print ("7) Sign out") # sign out
 		print (" ")
 		option = int(input ("Choose your option: "))
 		return option
@@ -204,16 +206,23 @@ class BankSystem(object):
 						self.df.to_csv('customers.csv', index=False, sep=';')
 
 
+			elif choice == 4: # print all customer details
+				for index, row in self.df.iterrows():  # outputs all the customer details in an ordered format
+					for col in self.df.columns:
+						print(f"{col}: {row[col]}")
+					print()
 
-
-
-			elif choice == 4:
-				#Todo
+			elif choice == 5:  # admin settings
 				pass
 
-			elif choice == 5:
+			elif choice == 6: #managment report
+				pass
+
+			elif choice == 7: # sign out
+				pass
+			elif choice == 8:
 				loop = 0
-		print ("\n Exit account operations")
+			print("\n Exit account operations")
 
 
 	def print_all_accounts_details(self):
