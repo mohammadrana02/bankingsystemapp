@@ -11,8 +11,14 @@ class BankSystem(object):
 		self.load_bank_data()
 
 		# loads the customer data into a dataframe
-		self.df = pd.read_csv('customers.csv', sep=';')
-		print(self.df)
+
+		try:
+			self.df = pd.read_csv('customers.csv', sep=';')
+		except FileNotFoundError:
+			print("Error: 'customers.csv' not found. Please check the file path.")
+			self.df = pd.DataFrame()  # empty dataframe to avoid another crash
+		except pd.errors.ParserError:
+			print("Error: 'customers.csv' is corrupted or improperly formatted.")
 
 	def load_bank_data(self):
 
@@ -50,7 +56,7 @@ class BankSystem(object):
 				interest_rate=user_data['interest_rate'],
 				overdraft_limit=user_data['overdraft_limit'])
 
-			return 'Success', cust_obj
+			return 'Success. User found.', cust_obj
 		else:
 			return 'User does not exist.', None
 
@@ -64,23 +70,29 @@ class BankSystem(object):
 		print ("1) Admin login")
 		print ("2) Quit Python Bank System")
 		print (" ")
-		option = int(input ("Choose your option: "))
-		return option
+		try:
+			option = int(input("Choose your option: "))
+		except ValueError:
+			print('Error. Please enter a number.')
+		else:
+			return option
 
 	def run_main_options(self):
 		loop = 1
 		while loop == 1:
 			choice = self.main_menu()
 			if choice == 1:
-				username = input ("\n Please input admin username: ")
-				password = input ("\n Please input admin password: ")
+				username = input("\n Please input admin username: ")
+				password = input("\n Please input admin password: ")
 				msg, admin_obj = self.admin_login(username, password)
 				print(msg)
 				if admin_obj != None:
 					self.run_admin_options(admin_obj)
 			elif choice == 2:
 				loop = 0
-		print ("\n Thank-You for stopping by the bank!")
+				print ("\n Thank-You for stopping by the bank!")
+			else:
+				print('Invalid input. Try again.')
 
 	def transferMoney(self, sender_lname, receiver_lname, receiver_account_no, amount):
 		msg, sender = self.search_customers_by_name(sender_lname)
@@ -113,8 +125,12 @@ class BankSystem(object):
 		print("6) Print management report")
 		print ("7) Sign out") # sign out
 		print (" ")
-		option = int(input ("Choose your option: "))
-		return option
+		try:
+			option = int(input ("Choose your option: "))
+		except ValueError:
+			print('Error. Please enter a number.')
+		else:
+			return option
 
 	def run_admin_options(self, admin_obj):
 		loop = 1
@@ -122,10 +138,14 @@ class BankSystem(object):
 			choice = self.admin_menu(admin_obj)
 			if choice == 1:
 				sender_lname = input("\n Please input sender surname: ")
-				amount = float(input("\n Please input the amount to be transferred: "))
-				receiver_lname = input("\n Please input receiver surname: ")
-				receiver_account_no = input("\n Please input receiver account number: ")
-				self.transferMoney(sender_lname, receiver_lname, receiver_account_no, amount)
+				try:
+					amount = float(input("\n Please input the amount to be transferred: "))
+				except ValueError:
+					print('Error. Please enter a number.')
+				else:
+					receiver_lname = input("\n Please input receiver surname: ")
+					receiver_account_no = input("\n Please input receiver account number: ")
+					self.transferMoney(sender_lname, receiver_lname, receiver_account_no, amount)
 			elif choice == 2:
 				while True:
 					lname = input("\n Please input the customer's last name: ")
@@ -142,8 +162,11 @@ class BankSystem(object):
 						lname = input("\n Please input the customer's last name: ")
 						msg, cust_obj = self.search_customers_by_name(lname=lname)
 						print(msg)
-						self.df.drop(self.df[self.df['lname'] == cust_obj.get_last_name()].index, inplace=True)
-						self.df.to_csv('customers.csv', index=False, sep=';')
+						try:
+							self.df.drop(self.df[self.df['lname'] == cust_obj.get_last_name()].index, inplace=True)
+							self.df.to_csv('customers.csv', index=False, sep=';')
+						except KeyError as ke: # incorrect dataframe structure
+							print(f"Error updating customer data: {ke}")
 
 			elif choice == 4: # print all customer details
 				self.print_all_accounts_details()
@@ -163,15 +186,19 @@ class BankSystem(object):
 				elif option == 2:
 					print(f'Current Address: {admin_obj.get_address()}')
 
-					hnumber = input("\nPlease enter the new address number: ")
-					str_name = input("Please enter the new street name: ")
-					city = input("Please enter the new city: ")
-					post_code = input("Please enter the new postcode: ")
+					try:
+						hnumber = int(input("\nPlease enter the new address number: "))
+					except ValueError:
+						print('Error. Please enter a number.')
+					else:
+						str_name = input("Please enter the new street name: ")
+						city = input("Please enter the new city: ")
+						post_code = input("Please enter the new postcode: ")
 
-					address = f'{hnumber}, {str_name}, {city}, {post_code}'
-					admin_obj.update_address(address)
+						address = f'{hnumber}, {str_name}, {city}, {post_code}'
+						admin_obj.update_address(address)
 
-					print(f'New Address: {admin_obj.get_address()}')
+						print(f'New Address: {admin_obj.get_address()}')
 
 				elif option == 3:
 					print(f'Current Username: {admin_obj.get_username()}')
@@ -187,9 +214,8 @@ class BankSystem(object):
 					admin_obj.update_password(new_password)
 
 					print(f'New Password: {admin_obj.get_password()}')
-
 				else:
-					print('Invalid option. Please try again.')
+					print('Invalid option.')
 
 			elif choice == 6: #managment report
 				total_money = self.df['balance'].sum()  # The sum of all money the customers currently have in their accounts.
@@ -213,7 +239,7 @@ class BankSystem(object):
 
 			elif choice == 7:
 				loop = 0
-			print("\n Exit account operations")
+				print("\n Exit account operations")
 
 	def print_all_accounts_details(self):
 		for index, row in self.df.iterrows():  # outputs all the customer details in an ordered format
@@ -222,6 +248,9 @@ class BankSystem(object):
 			print()
 
 
-app = BankSystem()
-app.run_main_options()
+try:
+	app = BankSystem()
+	app.run_main_options()
+except Exception as e: # generic exception handling
+	print(f"An unexpected error occurred: {e}")
 

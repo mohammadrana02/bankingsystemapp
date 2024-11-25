@@ -50,6 +50,10 @@ class Admin:
         print("2) Set Address")  # deposit, withdraw, view details, check balance
         print("3) Set Username")  # delete customer if admin has full rights
         print("4) Set Password")  # output all customer details
-        option = int(input("Choose your option: "))
-        return option
+        try:
+            option = int(input("Choose your option: "))
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+        else:
+            return option
 

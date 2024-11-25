@@ -29,9 +29,12 @@ class CustomerAccount:
         return self.address
     
     def deposit(self, amount, df):
-        df.loc[df['lname'] == self.get_last_name(), 'balance'] += amount
-        df.to_csv('customers.csv', index=False, sep=';')
-        self.balance+=amount
+        if amount < 0:
+            print('Error. Deposit amount less than 0.')
+        else:
+            df.loc[df['lname'] == self.get_last_name(), 'balance'] += amount
+            df.to_csv('customers.csv', index=False, sep=';')
+            self.balance+=amount
         
     def withdraw(self, amount, df):
         if amount > self.get_balance():
@@ -64,8 +67,12 @@ class CustomerAccount:
         print ("6) Show customer details")
         print ("7) Back")
         print (" ")
-        option = int(input ("Choose your option: "))
-        return option
+        try:
+            option = int(input("Choose your option: "))
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+        else:
+            return option
     
     def print_details(self):
         print("First name: %s" % self.fname)
@@ -113,19 +120,23 @@ class CustomerAccount:
                 sname = input("\nEnter new customer last name: ")
                 self.update_last_name(sname)
             elif choice == 5:
-                hnumber = input("\nPlease enter the new address number: ")
-                str_name = input("Please enter the new street name: ")
-                city = input("Please enter the new city: ")
-                post_code = input("Please enter the new postcode: ")
+                try:
+                    hnumber = int(input("\nPlease enter the new address number: "))
+                except ValueError as e:
+                    print("Error. Please enter a number.")
+                else:
+                    str_name = input("Please enter the new street name: ")
+                    city = input("Please enter the new city: ")
+                    post_code = input("Please enter the new postcode: ")
 
-                address = f'{hnumber}, {str_name}, {city}, {post_code}'
+                    address = f'{hnumber}, {str_name}, {city}, {post_code}'
 
-                df.loc[df['lname'] == self.get_last_name(), 'address'] = address
-                df.to_csv('customers.csv', index=False, sep=';')
+                    df.loc[df['lname'] == self.get_last_name(), 'address'] = address
+                    df.to_csv('customers.csv', index=False, sep=';')
 
-                self.update_address(address)
+                    self.update_address(address)
             elif choice == 6:
                 self.print_details()
             elif choice == 7:
                 loop = 0
-        print ("\n Exit account operations")
+                print ("\n Exit account operations")
