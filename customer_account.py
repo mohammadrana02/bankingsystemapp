@@ -85,17 +85,25 @@ class CustomerAccount:
         while loop == 1:
             choice = self.account_menu()
             if choice == 1:
-                amount = float(input("\n Please enter amount to be deposited: "))
-                self.deposit(amount, df)
-                self.print_balance()
+                try:
+                    amount = float(input("\n Please enter amount to be deposited: "))
+                except ValueError as e:
+                    print("Error. Please enter a number.")
+                else:
+                    self.deposit(amount, df)
+                    self.print_balance()
 
             elif choice == 2:
-                withdraw = float(input("\n Please input the amount to withdraw: "))
-                old_balance = self.get_balance()
-                self.withdraw(withdraw, df)
+                try:
+                    withdraw = float(input("\n Please input the amount to withdraw: "))
+                except ValueError as e:
+                    print("Error. Please enter a number.")
+                else:
+                    old_balance = self.get_balance()
+                    self.withdraw(withdraw, df)
 
-                print(f'Old Balance: £{old_balance}')
-                print(f'New Balance: £{self.get_balance()}')
+                    print(f'Old Balance: £{old_balance}')
+                    print(f'New Balance: £{self.get_balance()}')
 
             elif choice == 3:
                 self.print_balance()
