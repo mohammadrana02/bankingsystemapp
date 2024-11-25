@@ -1,11 +1,14 @@
 
 class CustomerAccount:
-    def __init__(self, fname, lname, address, account_no, balance):
+    def __init__(self, fname, lname, address, account_no, balance, account_type, interest_rate, overdraft_limit):
         self.fname = fname
         self.lname = lname
         self.address = address.split(',')
         self.account_no = account_no
         self.balance = float(balance)
+        self.account_type = account_type
+        self.interest_rate = interest_rate
+        self.overdraft_limit = overdraft_limit
     
     def update_first_name(self, fname):
         self.fname = fname
@@ -59,6 +62,9 @@ class CustomerAccount:
         print("Last name: %s" % self.lname)
         print("Account No: %s" % self.account_no)
         print("Address: %s" % self.address[0])
+        print('Account Type: %s' % self.account_type)
+        print("Interest Rate: %s" % self.interest_rate)
+        print("Overdraft Limit: %s" % self.overdraft_limit)
         print(" %s" % self.address[1])
         print(" %s" % self.address[2])
         print(" %s" % self.address[3])

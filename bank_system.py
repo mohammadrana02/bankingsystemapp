@@ -52,7 +52,11 @@ class BankSystem(object):
 				lname=user_data['lname'],
 				address=user_data['address'],
 				account_no=user_data['account_no'],
-				balance=user_data['balance'])
+				balance=user_data['balance'],
+				account_type=user_data['account_type'],
+				interest_rate=user_data['interest_rate'],
+				overdraft_limit=user_data['overdraft_limit'])
+
 			return 'Success', cust_obj
 		else:
 			return 'User does not exist.', None
