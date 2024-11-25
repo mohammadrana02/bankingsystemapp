@@ -3,7 +3,6 @@ from admin import Admin
 import pandas as pd
 pd.set_option('display.max_columns', None) # so the user's data won't be truncated when it is printed to the console
 
-accounts_list = []
 admins_list = []
 
 class BankSystem(object):
@@ -14,10 +13,6 @@ class BankSystem(object):
 		# loads the customer data into a dataframe
 		self.df = pd.read_csv('customers.csv', sep=';')
 		print(self.df)
-
-		# # loads the admin data into a dataframe
-		# self.ad = pd.read_csv('admins.csv', sep=';')
-		# print(self.ad)
 
 	def load_bank_data(self):
 
@@ -137,79 +132,8 @@ class BankSystem(object):
 					msg, cust_obj = self.search_customers_by_name(lname=lname)
 					print(msg)
 					if cust_obj is not None:
-						while True:
-							# option = self.cust_menu(cust_obj)
-							option = cust_obj.account_menu()
-							if option == 1: # deposit into customer account
-								deposit = float(input("\n Please input the amount to deposit: "))
-								old_balance = cust_obj.get_balance()
-								cust_obj.deposit(deposit) # updates the balance within the app
+						cust_obj.run_account_options(self.df)
 
-								# updates the balance in the file
-								self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'balance'] += deposit
-								self.df.to_csv('customers.csv', index=False, sep=';')
-
-								# compares old and new balance
-								print(f'Deposit successful.')
-								print(f'Old Balance: £{old_balance}')
-								print(f'New Balance: £{cust_obj.get_balance()}')
-
-							if option == 2: # withdraw from account
-								while True:
-									withdraw = float(input("\n Please input the amount to withdraw: "))
-									old_balance = cust_obj.get_balance()
-									if withdraw > cust_obj.get_balance():
-										print('Error. withdraw amount greater than balance.')
-									elif withdraw < 0:
-										print('Error. withdraw amount less than 0.')
-									else:
-										cust_obj.withdraw(withdraw)
-										self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'balance'] -= withdraw
-										self.df.to_csv('customers.csv', index=False, sep=';')
-										print(f'Withdraw successful.')
-										print(f'Old Balance: £{old_balance}')
-										print(f'New Balance: £{cust_obj.get_balance()}')
-
-							if option == 3: # check balance
-								print(cust_obj.print_balance())
-								# print(f'Current Balance: £{cust_obj.get_balance()}')
-							if option == 4: # update customer name
-								lname = input("\nPlease enter the new last name: ")
-								fname = input("\nPlease enter the new first name: ")
-
-								# Update the first name in the dataframe
-								self.df.loc[self.df['fname'] == cust_obj.get_first_name(), 'fname'] = fname
-
-								# Update the last name in the dataframe
-								self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'lname'] = lname
-								self.df.to_csv('customers.csv', index=False, sep=';')
-
-								# update first and last name within the app
-								cust_obj.update_first_name(fname)
-								cust_obj.update_last_name(lname)
-
-								# Print confirmation or updated DataFrame
-								print(f"Updated names: {fname} {lname}")
-
-							if option == 5: # update address house num, street name city postcode
-								hnumber = input("\nPlease enter the new address number: ")
-								str_name = input("Please enter the new street name: ")
-								city = input("Please enter the new city: ")
-								post_code = input("Please enter the new postcode: ")
-
-								address = f'{hnumber}, {str_name}, {city}, {post_code}'
-
-								self.df.loc[self.df['lname'] == cust_obj.get_last_name(), 'address'] = address
-								self.df.to_csv('customers.csv', index=False, sep=';')
-
-								cust_obj.update_address(address)
-
-								print(f'Updated address:')
-
-							if option == 6: # show customer details
-								cust_obj.print_details()
-							if option == 7: # go back to admin menu
-								self.admin_menu(admin_obj)
 			elif choice == 3: # closing a user account
 				if admin_obj.has_full_admin_right() is False:
 					print('You do not have permissions to perform this action.')
@@ -223,13 +147,50 @@ class BankSystem(object):
 
 
 			elif choice == 4: # print all customer details
-				for index, row in self.df.iterrows():  # outputs all the customer details in an ordered format
-					for col in self.df.columns:
-						print(f"{col}: {row[col]}")
-					print()
+				self.print_all_accounts_details()
 
 			elif choice == 5:  # admin settings
-				pass
+				option = admin_obj.admin_settings()
+				if option == 1:
+					print(f'Current Name: {admin_obj.get_first_name()}')
+					new_lname = input("\n Please input new Last Name: ")
+					new_fname = input("\n Please input new First Name: ")
+
+					admin_obj.update_first_name(new_fname)
+					admin_obj.update_last_name(new_lname)
+
+					print(f'New Name: {admin_obj.get_first_name(), admin_obj.get_last_name()}')
+
+				elif option == 2:
+					print(f'Current Address: {admin_obj.get_address()}')
+
+					hnumber = input("\nPlease enter the new address number: ")
+					str_name = input("Please enter the new street name: ")
+					city = input("Please enter the new city: ")
+					post_code = input("Please enter the new postcode: ")
+
+					address = f'{hnumber}, {str_name}, {city}, {post_code}'
+					admin_obj.update_address(address)
+
+					print(f'New Address: {admin_obj.get_address()}')
+
+				elif option == 3:
+					print(f'Current Username: {admin_obj.get_username()}')
+
+					new_uname = input("\nPlease enter the new username: ")
+					admin_obj.set_username(new_uname)
+
+					print(f'New Username: {admin_obj.get_username()}')
+
+				elif option == 4:
+					print(f'Current Password: {admin_obj.get_password()}')
+					new_password = input("\nPlease enter the new password: ")
+					admin_obj.update_password(new_password)
+
+					print(f'New Password: {admin_obj.get_password()}')
+
+				else:
+					print('Invalid option. Please try again.')
 
 			elif choice == 6: #managment report
 				total_money = self.df['balance'].sum()  # The sum of all money the customers currently have in their accounts.
@@ -256,51 +217,12 @@ class BankSystem(object):
 			print("\n Exit account operations")
 
 	def print_all_accounts_details(self):
-		# list related operation - move to main.py
-		i = 0
-		for c in self.accounts_list:
-			i+=1
-			print('\n %d. ' %i, end = ' ')
-			c.print_details()
-			print("------------------------")
+		for index, row in self.df.iterrows():  # outputs all the customer details in an ordered format
+			for col in self.df.columns:
+				print(f"{col}: {row[col]}")
+			print()
 
 
 app = BankSystem()
 app.run_main_options()
 
-# user_exists = self.ad[(self.ad['user_name'] == username) & (
-# 		self.ad['password'] == int(password))]  # checks if the username and password match
-#
-# if not user_exists.empty:  # if the username and the password are a match
-# 	admin_data = user_exists.iloc[0]  # Get the first matching row (if any)
-#
-# 	# creating the Admin object with the relevant fields
-# 	admin_obj = Admin(
-# 		fname=admin_data['fname'],
-# 		lname=admin_data['lname'],
-# 		address=admin_data['address'],
-# 		user_name=admin_data['user_name'],
-# 		password=admin_data['password'],
-# 		full_rights=admin_data['full_rights'])
-#
-# 	return 'Successfully logged in!', admin_obj
-# else:
-# 	return 'Username or password incorrect.', None  # if they don't match
-
-# create customers
-# account_no = 1234
-# customer_1 = CustomerAccount("Adam", "Smith", ["14", "Wilcot Street", "Bath", "B5 5RT"], account_no, 5000.00)
-# self.accounts_list.append(customer_1)
-#
-# account_no+=1
-# customer_2 = CustomerAccount("David", "White", ["60", "Holborn Viaduct", "London", "EC1A 2FD"], account_no, 3200.00)
-# self.accounts_list.append(customer_2)
-#
-# account_no+=1
-# customer_3 = CustomerAccount("Alice", "Churchil", ["5", "Cardigan Street", "Birmingham", "B4 7BD"], account_no, 18000.00)
-# self.accounts_list.append(customer_3)
-#
-# account_no+=1
-# customer_4 = CustomerAccount("Ali", "Abdallah",["44", "Churchill Way West", "Basingstoke", "RG21 6YR"], account_no, 40.00)
-# self.accounts_list.append(customer_4)
-# create admins

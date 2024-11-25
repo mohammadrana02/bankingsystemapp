@@ -45,3 +45,11 @@ class Admin:
     def has_full_admin_right(self):
         return self.full_admin_rights
 
+    def admin_settings(self):
+        print("1) Set Name")  # transfer from one account to another
+        print("2) Set Address")  # deposit, withdraw, view details, check balance
+        print("3) Set Username")  # delete customer if admin has full rights
+        print("4) Set Password")  # output all customer details
+        option = int(input("Choose your option: "))
+        return option
+
