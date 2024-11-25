@@ -220,14 +220,28 @@ class BankSystem(object):
 				pass
 
 			elif choice == 6: #managment report
-				pass
+				total_money = self.df['balance'].sum()  # The sum of all money the customers currently have in their accounts.
+				total_overdrafts = self.df['overdraft_limit'].sum()
+				total_customers = self.df.shape[0]
 
-			elif choice == 7: # sign out
-				pass
-			elif choice == 8:
+				# temporary column to hold the interest for each customer
+				self.df['interest'] = self.df['balance'] * self.df['interest_rate']
+				# Calculate the total interest payable
+				total_interest_payable = self.df['interest'].sum()
+
+				# Display the dataframe and total interest
+				print("\n")
+				print('Management Report')
+
+				print(f'Total customers: {total_customers}')
+				print(f'Total money: {total_money}')  # calculates total money in the dataframe
+				print(f'Overdrafts: {total_overdrafts}')
+				print(f"Total Interest Payable: {total_interest_payable}")
+				print("\n")
+
+			elif choice == 7:
 				loop = 0
 			print("\n Exit account operations")
-
 
 	def print_all_accounts_details(self):
 		# list related operation - move to main.py
