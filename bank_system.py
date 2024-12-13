@@ -1,18 +1,21 @@
+from tkinter import messagebox
+
 from customer_account import CustomerAccount
 from admin import Admin
 import pandas as pd
+from tkinter import *
 pd.set_option('display.max_columns', None) # so the user's data won't be truncated when it is printed to the console
 
-admins_list = []
 
 class BankSystem(object):
-	def __init__(self):
-		self.admins_list = []
+	def __init__(self, root):
+		self.admins_list = [] # stores the admin objects
 		self.load_bank_data()
+		self.root = root
+		self.root.title('Bank System')
+		self.root.geometry('500x500')
 
-		# loads the customer data into a dataframe
-
-		try:
+		try: # attempts to load the customer data (stores in a csv) into a dataframe while checking for exceptions
 			self.df = pd.read_csv('customers.csv', sep=';')
 		except FileNotFoundError:
 			print("Error: 'customers.csv' not found. Please check the file path.")
@@ -20,17 +23,27 @@ class BankSystem(object):
 		except pd.errors.ParserError:
 			print("Error: 'customers.csv' is corrupted or improperly formatted.")
 
-	def load_bank_data(self):
+		self.main_menu()
 
-		admin_1 = Admin("Julian", "Padget", ["12", "London Road", "Birmingham", "B95 7TT"], "id1188", "1441", True)
+	def clear_window(self):
+		for widget in self.root.winfo_children():
+			widget.destroy()
+
+	def load_bank_data(self):
+		"""loads the admin information into self.admins_list"""
+
+		admin_1 = Admin("Julian", "Padget", ["12", "London Road", "Birmingham", "B95 7TT"],
+						"id1188", "1441", True)
 		self.admins_list.append(admin_1)
 
-		admin_2 = Admin("Cathy",  "Newman", ["47", "Mars Street", "Newcastle", "NE12 6TZ"], "id3313", "2442", False)
+		admin_2 = Admin("Cathy",  "Newman", ["47", "Mars Street", "Newcastle", "NE12 6TZ"],
+						"id3313", "2442", False)
 		self.admins_list.append(admin_2)
 
 	def search_admins_by_name(self, admin_username):
+		"""searches for admin based on a given username"""
 		found_admin = None
-		for a in self.admins_list:
+		for a in self.admins_list: # looks through the admin usernames in the admin list
 			username = a.get_username()
 			if username == admin_username:
 				found_admin = a
@@ -40,12 +53,16 @@ class BankSystem(object):
 		return found_admin
 
 	def search_customers_by_name(self, lname):
-		user_exists = self.df[(self.df['lname'] == lname)]  # checks if the last name exists
+		"""searches for customers by their last name and returns a customer object if found"""
 
-		if not user_exists.empty:  # if the account number is a match
-			user_data = user_exists.iloc[0]  # Get the first matching row (if any)
+		# checks the last names in the customers dataframe
+		user_exists = self.df[(self.df['lname'] == lname)]
 
-			# creating the User object with the relevant fields
+		if not user_exists.empty:
+			# if the account number is a match. get the first matching row (if any)
+			user_data = user_exists.iloc[0]
+
+			# creating the customer object using the matching fields in the dataframe
 			cust_obj = CustomerAccount(
 				fname=user_data['fname'],
 				lname=user_data['lname'],
@@ -56,98 +73,117 @@ class BankSystem(object):
 				interest_rate=user_data['interest_rate'],
 				overdraft_limit=user_data['overdraft_limit'])
 
+			# a success message along with a customer object is returned otherwise an error message with no object
 			return 'Success. User found.', cust_obj
 		else:
 			return 'User does not exist.', None
 
 	def main_menu(self):
-		#print the options you have
-		print()
-		print()
-		print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-		print ("Welcome to the Python Bank System")
-		print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-		print ("1) Admin login")
-		print ("2) Quit Python Bank System")
-		print (" ")
-		try:
-			option = int(input("Choose your option: "))
-		except ValueError:
-			print('Error. Please enter a number.')
-		else:
-			return option
+		self.header_label = Label(self.root, text='Welcome to the Python Bank System')
+		self.header_label.pack()
+
+		self.admin_login_button = Button(self.root, text='Admin Login', command=self.run_main_options)
+		self.admin_login_button.pack()
+
+		self.quit = Button(self.root, text='Quit', command=self.root.destroy)
+		self.quit.pack()
 
 	def run_main_options(self):
-		loop = 1
-		while loop == 1:
-			choice = self.main_menu()
-			if choice == 1:
-				username = input("\n Please input admin username: ")
-				password = input("\n Please input admin password: ")
-				msg, admin_obj = self.admin_login(username, password)
-				print(msg)
-				if admin_obj != None:
-					self.run_admin_options(admin_obj)
-			elif choice == 2:
-				loop = 0
-				print ("\n Thank-You for stopping by the bank!")
+		"""Controls how logic for the main_menu options"""
+		self.clear_window()
+
+		self.login_label = Label(self.root, text='Login')
+		self.login_label.grid(row=0, column=0, padx=5, pady=5)
+
+		self.login_entry = Entry(self.root)
+		self.login_entry.grid(row=0, column=1, padx=5, pady=5)
+
+		self.pass_label = Label(self.root, text='Password')
+		self.pass_label.grid(row=1, column=0, padx=5, pady=5)
+
+		self.pass_entry = Entry(self.root)
+		self.pass_entry.grid(row=1, column=1, padx=5, pady=5)
+
+		self.login_button = Button(self.root, text='Login', command=self.admin_login)
+		self.login_button.grid(row=1, column=2, padx=5, pady=5)
+
+		# loop = 1
+		# while loop == 1:
+		# 	choice = self.main_menu()
+		# 	if choice == 1:
+		# 		# the user is prompted to input their username and password
+		# 		username = input("\n Please input admin username: ")
+		# 		password = input("\n Please input admin password: ")
+		# 		msg, admin_obj = self.admin_login(username, password)
+		# 		print(msg)
+		# 		if admin_obj != None:
+		# 			# if the login was successful then it displays the admin options
+		# 			self.run_admin_options(admin_obj)
+		# 	elif choice == 2:
+		# 		# closes the app by ending the loop
+		# 		loop = 0
+		# 		print ("\n Thank you for stopping by the bank!")
+		# 	else: # if the input was invalid the loop will repeat
+		# 		print('Invalid input. Try again.')
+
+
+
+	def admin_login(self):
+		username = self.login_entry.get()
+		password = self.pass_entry.get()
+
+		"""Checks if the username and password are correct for the admin"""
+		admin_obj = self.search_admins_by_name(username) # first searches for the admin based on username
+
+		if admin_obj != None: # if the admin is found, it checks if the password is correct
+			if admin_obj.get_password() == password: # if the details match
+				messagebox.showinfo('Success', 'Login successful!')
+				self.run_admin_options(admin_obj)
 			else:
-				print('Invalid input. Try again.')
-
-	def transferMoney(self, sender_lname, receiver_lname, receiver_account_no, amount):
-		msg, sender = self.search_customers_by_name(sender_lname)
-		msg, receiver = self.search_customers_by_name(receiver_lname)
-
-		sender.withdraw(amount, self.df)
-		receiver.deposit(amount, self.df)
-
-		print(f'Sender Balance: {sender.get_balance()}')
-		print(f'Receiver Balance: {receiver.get_balance()}')
-
-	def admin_login(self, username, password):
-		found_admin = self.search_admins_by_name(username)
-		msg = "\n Login failed"
-		if found_admin != None:
-			if found_admin.get_password() == password:
-				msg = "\n Login successful"
-		return msg, found_admin
+				messagebox.showerror('Error', 'User not found.')
 
 	def admin_menu(self, admin_obj):
-		#print the options you have
-		print (" ")
-		print ("Welcome Admin %s %s : Available options are:" %(admin_obj.get_first_name(), admin_obj.get_last_name()))
-		print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
-		print ("1) Transfer money") # transfer from one account to another
-		print ("2) Customer account operations & profile settings") # deposit, withdraw, view details, check balance
-		print ("3) Delete customer") # delete customer if admin has full rights
-		print ("4) Print all customers details") # output all customer details
-		print("5) Admin settings")
-		print("6) Print management report")
-		print ("7) Sign out") # sign out
-		print (" ")
-		try:
-			option = int(input ("Choose your option: "))
-		except ValueError:
-			print('Error. Please enter a number.')
-		else:
-			return option
+
+		# """Displays the admin menu and prompts the user to make a choice"""
+		# #print the options you have
+		# print (" ")
+		# print ("Welcome Admin %s %s : Available options are:" %(admin_obj.get_first_name(), admin_obj.get_last_name()))
+		# print ("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
+		# print ("1) Transfer money") # transfer from one account to another
+		# # deposit, withdraw, view details, check balance, update details, print details
+		# print ("2) Customer account operations & profile settings")
+		# print ("3) Delete customer") # delete customer if admin has full right
+		# print ("4) Print all customers details") # output all customer details
+		# print("5) Admin settings") # admin can change account details
+		# print("6) Print management report")
+		# print ("7) Sign out")
+		# print (" ")
+		# try: # catches any input that isn't an integer
+		# 	option = int(input ("Choose your option: "))
+		# except ValueError:
+		# 	print('Error. Please enter a number.')
+		# else:
+		# 	return option
 
 	def run_admin_options(self, admin_obj):
+		"""Controls the admin options"""
 		loop = 1
 		while loop == 1:
 			choice = self.admin_menu(admin_obj)
-			if choice == 1:
-				sender_lname = input("\n Please input sender surname: ")
-				try:
+			if choice == 1:  # allows the admin to transfer from account to another
+				try: # prompts the admin to enter the amount to transfer while checking if the input is a float
 					amount = float(input("\n Please input the amount to be transferred: "))
 				except ValueError:
 					print('Error. Please enter a number.')
 				else:
+					# prompts user to input sender surname, receive surname and their account number
+					sender_lname = input("\n Please input sender surname: ")
 					receiver_lname = input("\n Please input receiver surname: ")
 					receiver_account_no = input("\n Please input receiver account number: ")
 					self.transferMoney(sender_lname, receiver_lname, receiver_account_no, amount)
-			elif choice == 2:
-				while True:
+			elif choice == 2: # customer account operations and profile settings
+				while True: # loop doesn't end until the customer profile is found
+					# searches for customer based on last name
 					lname = input("\n Please input the customer's last name: ")
 					msg, cust_obj = self.search_customers_by_name(lname=lname)
 					print(msg)
@@ -168,10 +204,10 @@ class BankSystem(object):
 						except KeyError as ke: # incorrect dataframe structure
 							print(f"Error updating customer data: {ke}")
 
-			elif choice == 4: # print all customer details
+			elif choice == 4: # displays all customer details
 				self.print_all_accounts_details()
 
-			elif choice == 5:  # admin settings
+			elif choice == 5:  # controls the admin settings
 				option = admin_obj.admin_settings()
 				if option == 1:
 					print(f'Current Name: {admin_obj.get_first_name()}')
@@ -240,6 +276,21 @@ class BankSystem(object):
 			elif choice == 7:
 				loop = 0
 				print("\n Exit account operations")
+				self.run_main_options()
+
+	def transferMoney(self, sender_lname, receiver_lname, receiver_account_no, amount):
+		"""Transfers money between two customers"""
+		# creates a sender and receiver object
+		msg, sender = self.search_customers_by_name(sender_lname)
+		msg, receiver = self.search_customers_by_name(receiver_lname)
+
+		# withdraws from sender and deposits into receiver account
+		sender.withdraw(amount, self.df)
+		receiver.deposit(amount, self.df)
+
+		# displays the updated balances
+		print(f'Sender Balance: {sender.get_balance()}')
+		print(f'Receiver Balance: {receiver.get_balance()}')
 
 	def print_all_accounts_details(self):
 		for index, row in self.df.iterrows():  # outputs all the customer details in an ordered format
@@ -247,10 +298,7 @@ class BankSystem(object):
 				print(f"{col}: {row[col]}")
 			print()
 
-
-try:
-	app = BankSystem()
-	app.run_main_options()
-except Exception as e: # generic exception handling
-	print(f"An unexpected error occurred: {e}")
+r = Tk()
+app = BankSystem(r)
+r.mainloop()
 

@@ -27,6 +27,9 @@ class CustomerAccount:
         
     def get_address(self):
         return self.address
+
+    def get_overdraft_limit(self):
+        return self.overdraft_limit
     
     def deposit(self, amount, df):
         if amount < 0:
@@ -37,16 +40,19 @@ class CustomerAccount:
             self.balance+=amount
         
     def withdraw(self, amount, df):
-        if amount > self.get_balance():
+
+        # the amount a customer can withdraw based on balance and overdraft limit
+        allowance = self.get_balance() + self.overdraft_limit
+
+        if amount > allowance: # if withdraw request is greater than balance + overdraft
             print('Error. withdraw amount greater than balance.')
-        elif amount < 0:
+        elif amount < 0: # if withdraw request is less than zero an error will be shown
             print('Error. withdraw amount less than 0.')
-        else:
+        else: # if the withdraw request is within the allowance
             self.balance-=amount
             df.loc[df['lname'] == self.get_last_name(), 'balance'] -= amount
             df.to_csv('customers.csv', index=False, sep=';')
 
-        
     def print_balance(self):
         print("\n The account balance is %.2f" %self.balance)
         
@@ -79,13 +85,14 @@ class CustomerAccount:
         print("Last name: %s" % self.lname)
         print("Account No: %s" % self.account_no)
         print("Address: %s" % self.address[0])
-        print('Account Type: %s' % self.account_type)
-        print("Interest Rate: %s" % self.interest_rate)
-        print("Overdraft Limit: %s" % self.overdraft_limit)
         print(" %s" % self.address[1])
         print(" %s" % self.address[2])
         print(" %s" % self.address[3])
         print(" ")
+        print('Account Type: %s' % self.account_type)
+        print("Interest Rate: %s" % self.interest_rate)
+        print("Overdraft Limit: %s" % self.overdraft_limit)
+
    
     def run_account_options(self, df):
         loop = 1
@@ -94,7 +101,7 @@ class CustomerAccount:
             if choice == 1:
                 try:
                     amount = float(input("\n Please enter amount to be deposited: "))
-                except ValueError as e:
+                except ValueError:
                     print("Error. Please enter a number.")
                 else:
                     self.deposit(amount, df)
@@ -103,7 +110,7 @@ class CustomerAccount:
             elif choice == 2:
                 try:
                     withdraw = float(input("\n Please input the amount to withdraw: "))
-                except ValueError as e:
+                except ValueError:
                     print("Error. Please enter a number.")
                 else:
                     old_balance = self.get_balance()
@@ -122,7 +129,7 @@ class CustomerAccount:
             elif choice == 5:
                 try:
                     hnumber = int(input("\nPlease enter the new address number: "))
-                except ValueError as e:
+                except ValueError:
                     print("Error. Please enter a number.")
                 else:
                     str_name = input("Please enter the new street name: ")
@@ -138,5 +145,5 @@ class CustomerAccount:
             elif choice == 6:
                 self.print_details()
             elif choice == 7:
-                loop = 0
-                print ("\n Exit account operations")
+                print("\n Exit account operations")
+                break

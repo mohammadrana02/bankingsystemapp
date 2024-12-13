@@ -1,6 +1,5 @@
 
 class Admin:
-    
     def __init__(self, fname, lname, address, user_name, password, full_rights):
         self.fname = fname
         self.lname = lname
@@ -50,6 +49,7 @@ class Admin:
         print("2) Set Address")  # deposit, withdraw, view details, check balance
         print("3) Set Username")  # delete customer if admin has full rights
         print("4) Set Password")  # output all customer details
+        print("6) Go back")  # go back to the main menu
         try:
             option = int(input("Choose your option: "))
         except ValueError:
